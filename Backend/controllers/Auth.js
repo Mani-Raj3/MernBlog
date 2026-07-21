@@ -1,12 +1,13 @@
-import UserModel from "../models/user"
+// import UserModel from "../models/user"
+import UserModel from "../models/user.js";
 
 
 const Register=async(req,res)=>{
      try {
-        const{fullName, email,password}=req.body
+        const{FullName, email,password}=req.body
 
         const exitUser=await UserModel.find({email})
-        if(!existUser){
+        if(!exitUser){
             return res.status(303).json({success:false,message:"User already Exist Please Login"})
         }
         const NewUser= new UserModel({
@@ -17,7 +18,7 @@ const Register=async(req,res)=>{
 
      } catch (error) {
         console.log(error)
-           return res.status(500).json({success:false,message:"Internal Server error"})
+           return res.status(400).json({success:false,message:"Internal Server error"})
         
      }
 }

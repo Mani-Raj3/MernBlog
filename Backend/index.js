@@ -8,13 +8,17 @@ const app=express()
 
 // mongodb connection
 DBcon()
-app.use(express.json)
+app.use(express.json())
 app.get("/",(req,res)=>{
     res.send("Hello from backend")
 })
 app.use('/auth',AuthRoutes)
 
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`App is running on port ${PORT}`);
+});
 
-app.listen(PORT,()=>{
-    console.log('app is runnig on ${PORT}')
-})
+// app.listen(PORT, () => {
+//     console.log(`App is running on port ${PORT}`);
+    
+// });

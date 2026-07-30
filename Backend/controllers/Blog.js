@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import PostModel from "../models/Blog.js"
 
-
+  //-->> This getAllBlogs is used for 
 const getAllBlogs = async (req, res) => {
     try {
         // Search
@@ -46,6 +46,7 @@ const getAllBlogs = async (req, res) => {
         });
     }
 }
+
 const getSingleBlog = async (req, res) => {
     try {
         const { id } = req.params;
@@ -91,7 +92,7 @@ const getSingleBlog = async (req, res) => {
     }
 };
 
-
+ // -->> 
 const Create=async(req,res)=>{
     try {
         const{title, desc}=req.body
@@ -115,6 +116,8 @@ const Create=async(req,res)=>{
 
     }
 }
+
+
 const deletePost = async (req, res) => {
     try {
         const { id } = req.params;

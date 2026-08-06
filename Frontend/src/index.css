@@ -1,0 +1,168 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,body{
+  width: 100%;
+  height: 100%;
+}
+
+body{
+  background-color: #0e1428;
+}
+.navbar{
+  background-color: #1f2936;
+}
+
+.btn_sign{
+  color: white;
+  background-color: rgb(123, 49, 251);
+  margin-right: 50px;
+  width: 80px;
+  height: 40px;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+
+.hero-section{
+  position: relative;
+  min-height: 100vh;        /* Add this */
+  padding: 150px 20px;      /* Remove the comma */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-image: url("https://images.unsplash.com/photo-1785369989107-92d3c4c5cdb7?w=1200&auto=format&fit=crop&q=80");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;   /* Add this */
+  color: white;
+
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+}
+
+.profile-container{
+  max-width: 400px;
+  margin: 50px auto;
+  background-color: #1A202C;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 0px rgba(0, 0, 0, 0.7);
+}
+.profile-title{
+  color: #E2E8F0;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+
+/* .profile-form{
+   width:390px;
+    background:#202738;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 0 15px rgba(0,0,0,.35);
+} */
+
+.profile-form{
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-image-section{
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.profile-image-label{
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+.profile-image{
+  width:100px ;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4a5568;
+}
+
+.profile-placeholder{
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #2D3748;
+  display: flex;
+  justify-content: center;
+  border: 2px solid #4a5568;
+}
+
+.profile-icon{
+  color: #A0AEC0;
+  font-size: 40px;
+}
+
+.profile-camera-icon{
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: #4A5568;
+  color: #E2E8F0;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+.profile-image-input{
+  display: none;
+}
+
+.input-group{
+  width: 100%;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.input-icon{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #A0AEC0;
+}
+
+.profile-input{
+  width: 100px;
+ padding: 10px 10px 10px 40px;
+  background-color: #2D3748;
+  color: #E2E8F0;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+border-radius: 50%;
+}
+
+.profile-input::placeholder{
+  color: #A0AEC0;
+}
+
+.profile-button{
+  width: 100%;
+  padding: 10px;
+  background-color: #3182ce;
+  color: #E2E8F0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.profile-button:hover{
+  background-color: #2B6CB0;
+}

@@ -1,19 +1,20 @@
 import express from 'express'
+import cors from "cors"
 import dotenv from 'dotenv'
 import DBCon from './utils/db.js'
 import AuthRoutes from './routes/Auth.js'
 import cookieParser from 'cookie-parser'
 import BlogsRoutes from './routes/Blog.js'
+
 dotenv.config()
 const PORT=process.env.PORT || 3000
 
-// const app=express()
-
-// // mongodb connection
-// DBCon()
-// app.use(express.json)
-
  const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,6 +26,7 @@ app.get("/",(req,res)=>{
     res.send("Helloo from backend")
 })
 
+app.use("/images", express.static("public/images"));
 app.use('/auth',AuthRoutes)
 app.use('/blog',BlogsRoutes)
 

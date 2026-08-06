@@ -1,66 +1,110 @@
-import React from 'react'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 export const Post = () => {
-  return (
-    <div className="container text-white mt-5 m">
-      <div className="row">
-    <div className="col-md-12">
-   <h1 className="fw-bold text-white mb-4 display-4">My First Blog</h1>
-   <img 
-   src="https://images.unsplash.com/photo-1777661097541-e9ebeffe6aa2?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    alt="Exploring the Art of Writing"
-    className="img-fluid mb-4"
-    style={{borderRadius: "10px", maxHeight: "500px", objectFit: "cover", width:"100%"}}
-    />
-    <p className="mb-5">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odit quam voluptatem possimus vero, nisi modi numquam mollitia odio magni vel libero cum rem reprehenderit nam ea inventore iure non neque!</p>
-   <hr />
 
-   <h3 className="mt-5 mb-4">Leave a comment</h3>
-   {/* <form>
-    <div className="mb-3">
-   <label htmlFor="comment" className="from-label">Comment</label>
-   <textarea className="from-control" id="comment" rows="4" placeholder="Write your comment here" required
-   ></textarea>
-    </div>
-    <button type="submit" className="btn btn-primary">Submit Comment</button>
-   </form> */}
+  const { id } = useParams();
 
+  const [blog, setBlog] = useState(null);
 
-<form>
-  <div className="mb-3">
-    <label htmlFor="comment" className="form-label">
-      Comment
-    </label>
+  const getSingleBlog = async () => {
+    try {
 
-    <textarea
-      className="form-control"
-      id="comment"
-      rows="4"
-      placeholder="Write your comment here"
-      required
-    ></textarea>
-  </div>
+      const res = await axios.get(
+        `http://localhost:8000/blog/${id}`
+      );
 
-  <button type="submit" className="btn btn-primary">
-    Submit Comment
-  </button>
-</form>
-<hr />
+      console.log(res.data);
 
-<h3 className="mt-5 mb-4">Comment</h3>
-<div className="bg-secondary p-3 rounded mb-3 d-flex">
-  <img src="https://plus.unsplash.com/premium_vector-1728553012443-3cf619e7579d?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
-  alt="kuch bhi"
-  className="rounded-circle me-3"
-  style={{width:"50px", height:"50px", objectFit:"cover"}}
-   />
-<div>
-<h5 className="mb-1">Mani</h5>
-<p className="mb-0">Amazinnnggg</p>
-</div>
-    </div>
+      setBlog(res.data.blog);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getSingleBlog();
+  }, [id]);
+
+  if (!blog) {
+    return (
+      <div className="container text-center mt-5">
+        <h3 className="text-white">Loading...</h3>
       </div>
-       </div> 
+    );
+  }
+
+  return (
+    <div className="container text-white mt-5">
+
+      <div className="row">
+
+        <div className="col-md-12">
+
+          <h1 className="fw-bold mb-4 display-4">
+            {blog.title}
+          </h1>
+
+          <img
+            src={`http://localhost:8000${blog.image}`}
+            alt={blog.title}
+            className="img-fluid mb-4"
+            style={{
+              borderRadius: "10px",
+              maxHeight: "500px",
+              objectFit: "cover",
+              width: "100%"
+            }}
+          />
+
+          <p className="fs-5">
+            {blog.desc}
+          </p>
+
+          <p className="text-secondary">
+            Posted on{" "}
+            {new Date(blog.createdAt).toLocaleDateString()}
+          </p>
+
+          <hr />
+
+          <h3 className="mt-5 mb-4">
+            Leave a Comment
+          </h3>
+
+          <form>
+
+            <div className="mb-3">
+
+              <label
+                htmlFor="comment"
+                className="form-label"
+              >
+                Comment
+              </label>
+
+              <textarea
+                className="form-control"
+                rows="4"
+                placeholder="Write your comment here..."
+              ></textarea>
+
+            </div>
+
+            <button
+              className="btn btn-primary"
+            >
+              Submit Comment
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
     </div>
-  )
-}
+  );
+};

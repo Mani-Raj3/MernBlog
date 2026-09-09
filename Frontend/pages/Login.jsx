@@ -76,13 +76,33 @@ export const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log(value);
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/auth/login",
+      value
+    );
 
-    // API call here later
-  };
+    console.log(response.data);
+
+    // Save token
+    localStorage.setItem("token", response.data.token);
+
+    // Optional: save user
+    localStorage.setItem(
+      "user",
+      JSON.stringify(response.data.user)
+    );
+
+    // Go to All Posts
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.log("Login error:", error.response?.data || error);
+  }
+};
 
   return (
     <>

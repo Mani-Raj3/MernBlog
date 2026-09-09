@@ -1,80 +1,171 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import DataTable from "react-data-table-component";
+import axios from "axios";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 
 export const Allpost = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const posts = [
-    {
-      title: "My First Blog",
-      desc: "This is my first Blog",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800"
-    },
-    {
-      title: "Learning React",
-      desc: "Learn React from beginner to advanced.",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800"
-    },
-    {
-      title: "JavaScript Basics",
-      desc: "Understand the basics of JavaScript.",
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800"
-    },
-    {
-      title: "Node.js Tutorial",
-      desc: "Build powerful backend applications with Node.js.",
-      image: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800"
-    },
-    {
-      title: "Web Development",
-      desc: "Explore modern web development technologies.",
-      image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800"
-    },
-    {
-      title: "Programming",
-      desc: "Improve your programming and problem-solving skills.",
-      image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=800"
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalBlogs, setTotalBlogs] = useState(0);
+
+  // Fetch blogs
+  const getPosts = async (page) => {
+    try {
+      setLoading(true);
+
+      const response = await axios.get(
+        `http://localhost:8000/blog/?page=${page}`
+      );
+
+      console.log(response.data);
+
+      setPosts(response.data.blogs);
+      setTotalBlogs(response.data.totalBlogs);
+      setCurrentPage(response.data.currentPage);
+
+    } catch (error) {
+      console.log("Error fetching blogs:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  // Fetch first page when component loads
+  useEffect(() => {
+    getPosts(1);
+  }, []);
+
+  // Delete
+  const handleDelete = async (id) => {
+    console.log("Delete ID:", id);
+
+    // Later you can call:
+     await axios.delete(
+  `http://localhost:8000/blog/delete/${id}`,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
+
+    // For now remove from UI
+    setPosts((prevPosts) =>
+      prevPosts.filter((post) => post._id !== id)
+    );
+  };
+
+  // Update
+  const handleUpdate = (id) => {
+    console.log("Update ID:", id);
+
+    // Later:
+    // navigate(`/update/${id}`);
+  };
+
+  // DataTable columns
+  const columns = [
+    {
+      name: "Image",
+      cell: (row) => (
+        <img
+          src={`http://localhost:8000${row.image}`}
+          alt={row.title}
+          style={{
+            width: "60px",
+            height: "60px",
+            objectFit: "cover",
+            borderRadius: "8px",
+          }}
+        />
+      ),
+      width: "100px",
+    },
+
+    {
+      name: "Title",
+      selector: (row) => row.title,
+      sortable: true,
+      grow: 2,
+    },
+
+    {
+      name: "Description",
+      selector: (row) => row.desc,
+      grow: 3,
+    },
+
+    {
+      name: "Created At",
+      selector: (row) => row.createdAt,
+      sortable: true,
+      format: (row) =>
+        new Date(row.createdAt).toLocaleDateString("en-IN"),
+    },
+
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn btn-warning btn-sm"
+            onClick={() => handleUpdate(row._id)}
+          >
+            <FaEdit /> Update
+          </button>
+
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDelete(row._id)}
+          >
+            <FaTrashAlt /> Delete
+          </button>
+
+        </div>
+      ),
+      width: "220px",
+    },
   ];
 
   return (
     <div className="container mt-5">
-      <h2 className="text-white mb-4">All Posts</h2>
 
-      <div className="row">
-        {posts.map((post, index) => (
-          <div className="col-md-4 mb-4" key={index}>
-            <div className="card h-100">
+      <h2 className="text-white mb-4">
+        All Posts
+      </h2>
 
-              <img
-                src={post.image}
-                alt={post.title}
-                className="card-img-top"
-                style={{
-                  height: "320px",
-                  objectFit: "cover"
-                }}
-              />
+      <DataTable
+        columns={columns}
+        data={posts}
 
-              <div className="card-body">
-                <h5 className="card-title">{post.title}</h5>
-                <p className="card-text">{post.desc}</p>
-              </div>
+        // MongoDB _id
+        keyField="_id"
 
-              <div className="card-footer d-flex justify-content-between">
-                <button className="btn btn-danger">
-                  <FaTrashAlt /> Delete
-                </button>
+        // Pagination
+        pagination
+        paginationServer
+        paginationTotalRows={totalBlogs}
+        paginationDefaultPage={currentPage}
 
-                <button className="btn btn-warning">
-                  <FaEdit /> Update
-                </button>
-              </div>
+        // When user clicks page 2
+        onChangePage={(page) => {
+          setCurrentPage(page);
+          getPosts(page);
+        }}
 
-            </div>
-          </div>
-        ))}
-      </div>
+        // Loading
+        progressPending={loading}
+
+        // UI
+        highlightOnHover
+        striped
+        responsive
+      />
+
     </div>
   );
 };

@@ -1,34 +1,126 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 export const Recentpost = () => {
- const navigate=useNavigate()
-  const handlenavigate=()=>{
-    navigate('/post/:025458466445')
-  }
 
-  return (
-    <>
-      <div className="container">
-        <div className="mb-5 text-center">
-          <h2 className="fw-bold text-white">Recent Post</h2>
-        </div>
+    const navigate = useNavigate();
 
-        <div className='row'>
-             <div className='col-md-4 col-lg-4 col-xs-12 mb-4'>
-                <div className="card border-success" style={{borderWidth: "2px", backgroundColor: "#2b2b2b",borderRadius:"10px",overflow:"hidden"}}>
-                   <img src="https://images.unsplash.com/photo-1777661097541-e9ebeffe6aa2?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  className='card-img-top img-fluid' alt="" /> 
-                  <div className="card-body bg-dark text-white">
-                    <h5 className="card-title">My First Blog</h5>
-                    <p className="card-text">This is my first blog</p>
-                    <button className="btn btn-primary w-100 mt-3" onClick={handlenavigate}>Read Article</button>
-                      
-                  </div>
+    const [blogs, setBlogs] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const getBlogs = async (pageNo = 1) => {
+        try {
+
+            const res = await axios.get(
+                `http://localhost:8000/blog?page=${pageNo}`
+            );
+
+            setBlogs(res.data.blogs);
+            setPage(res.data.currentPage);
+            setTotalPages(res.data.totalPages);
+console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        getBlogs(page);
+    }, [page]);
+
+    return (
+        <>
+            <div className="container">
+
+                <div className="mb-5 text-center">
+                    <h2 className="fw-bold text-white">Recent Posts</h2>
                 </div>
-             </div>
-        </div>
-      </div>
 
-    </>
-  )
-}
+                <div className="row">
+
+                    {blogs.map((blog) => (
+
+                        <div
+                            className="col-md-4 col-lg-4 mb-4"
+                            key={blog._id}
+                        >
+
+                            <div
+                                className="card border-success h-100"
+                                style={{
+                                    borderWidth: "2px",
+                                    backgroundColor: "#2b2b2b",
+                                    borderRadius: "10px",
+                                    overflow: "hidden"
+                                }}
+                            >
+
+                                <img
+                                    src={`http://localhost:8000${blog.image}`}
+                                    className="card-img-top"
+                                    alt={blog.title}
+                                    style={{
+                                        height: "220px",
+                                        objectFit: "cover"
+                                    }}
+                                />
+
+                                <div className="card-body bg-dark text-white">
+
+                                    <h5>{blog.title}</h5>
+
+                                    <p>{blog.desc}</p>
+
+                                    <button
+                                        className="btn btn-primary w-100 mt-3"
+                                        onClick={() =>
+                                            navigate(`/post/${blog._id}`)
+                                        }
+                                    >
+                                        Read Article
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+                {/* Pagination */}
+
+                <div className="d-flex justify-content-center my-4">
+
+                    <button
+                        className="btn btn-outline-light me-2"
+                        disabled={page === 1}
+                        onClick={() => setPage(page - 1)}
+                    >
+                        Previous
+                    </button>
+
+                    <span
+                        className="text-white align-self-center mx-3"
+                    >
+                        Page {page} of {totalPages}
+                    </span>
+
+                    <button
+                        className="btn btn-outline-light"
+                        disabled={page === totalPages}
+                        onClick={() => setPage(page + 1)}
+                    >
+                        Next
+                    </button>
+
+                </div>
+
+            </div>
+        </>
+    );
+};

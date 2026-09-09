@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from "cors";
 import { Create, deletePost, getAllBlogs, getSingleBlog } from '../controllers/Blog.js'
 //import { isAdmin } from '../middleware/isAdmin.js'
 import {   isLogin } from '../middleware/isLogin.js'

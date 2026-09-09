@@ -1,11 +1,25 @@
-import React from 'react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { post } from '../services/Endpoint'
 
 export const Navbar = () => {
 
-    const [islogin,setIslogin]=useState(true)
-// const [islogin,setIslogin]=useState(false) -->> yaha true hoga to user login h agr flase hoga to login nhi h 
+    const [islogin,setIslogin]=useState(() => Boolean(localStorage.getItem('token')))
+    const navigate = useNavigate()
+
+    const handleLogout = async () => {
+      try {
+        await post('/auth/logout')
+      } catch (error) {
+        // Local token removal must still happen if the server is unavailable.
+        console.error('Logout error:', error.response?.data || error)
+      } finally {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        setIslogin(false)
+        navigate('/login', { replace: true })
+      }
+    }
   return (
    <>
    <nav className="navbar d-flex justify-content-between align-items-center p-3 ">
@@ -27,7 +41,7 @@ export const Navbar = () => {
 
     <li><Link className= "dropdown-item" to="/dashboard">Dashboard</Link></li>
    <li><Link className= "dropdown-item" to={'/profile/9898984'}>Profile</Link></li>
-   <li><a className= "dropdown-item" style={{cursor:"pointer"}}>sign out</a></li>
+   <li><button type="button" className="dropdown-item" onClick={handleLogout}>Sign out</button></li>
     
 
    </ul>

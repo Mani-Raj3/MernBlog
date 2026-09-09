@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
-import axios from "axios";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { BaseUrl, del, get } from "../../src/services/Endpoint";
 
 export const Allpost = () => {
   const [posts, setPosts] = useState([]);
@@ -16,9 +16,7 @@ export const Allpost = () => {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        `http://localhost:8000/blog/?page=${page}`
-      );
+      const response = await get("/blog/", { page });
 
       console.log(response.data);
 
@@ -43,14 +41,7 @@ export const Allpost = () => {
     console.log("Delete ID:", id);
 
     // Later you can call:
-     await axios.delete(
-  `http://localhost:8000/blog/delete/${id}`,
-  {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  }
-);
+     await del(`/blog/delete/${id}`);
 
     // For now remove from UI
     setPosts((prevPosts) =>
@@ -72,7 +63,7 @@ export const Allpost = () => {
       name: "Image",
       cell: (row) => (
         <img
-          src={`http://localhost:8000${row.image}`}
+          src={`${BaseUrl}${row.image}`}
           alt={row.title}
           style={{
             width: "60px",

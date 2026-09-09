@@ -59,10 +59,13 @@
 // }
 
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { post } from "../src/services/Endpoint";
 
 export const Login = () => {
+
+  const navigate = useNavigate();
 
   const [value, setValue] = useState({
     email: "",
@@ -80,10 +83,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    const response = await axios.post(
-      "http://localhost:8000/auth/login",
-      value
-    );
+    const response = await post("/auth/login", value);
 
     console.log(response.data);
 

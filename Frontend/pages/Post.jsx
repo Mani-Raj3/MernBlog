@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
+import { BaseUrl, get } from "../src/services/Endpoint";
 
 export const Post = () => {
 
@@ -11,9 +11,7 @@ export const Post = () => {
   const getSingleBlog = async () => {
     try {
 
-      const res = await axios.get(
-        `http://localhost:8000/blog/${id}`
-      );
+      const res = await get(`/blog/${id}`);
 
       console.log(res.data);
 
@@ -48,7 +46,7 @@ export const Post = () => {
           </h1>
 
           <img
-            src={`http://localhost:8000${blog.image}`}
+            src={`${BaseUrl}${blog.image}`}
             alt={blog.title}
             className="img-fluid mb-4"
             style={{

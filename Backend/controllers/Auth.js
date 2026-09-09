@@ -88,6 +88,13 @@ const Login = async (req, res) => {
         //     maxAge: 4* 24 * 60 * 1000
         //  })
 
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 4 * 24 * 60 * 60 * 1000
+        })
+
         res.status(200).json({ success: true, message: "Login successfully", user: FindUser, token })
 
 
@@ -99,7 +106,11 @@ const Login = async (req, res) => {
 
 const Logout = async (req, res) => {
     try {
-        res.clearCookie('token')
+        res.clearCookie('token', {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        })
         res.status(200).json({ success: true, message: "Logout Successfullyyyy" })
 
     } catch (error) {

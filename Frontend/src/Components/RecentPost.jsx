@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BaseUrl, get } from "../services/Endpoint";
 
 export const Recentpost = () => {
 
@@ -13,9 +13,7 @@ export const Recentpost = () => {
     const getBlogs = async (pageNo = 1) => {
         try {
 
-            const res = await axios.get(
-                `http://localhost:8000/blog?page=${pageNo}`
-            );
+            const res = await get("/blog", { page: pageNo });
 
             setBlogs(res.data.blogs);
             setPage(res.data.currentPage);
@@ -58,7 +56,7 @@ console.log(res);
                             >
 
                                 <img
-                                    src={`http://localhost:8000${blog.image}`}
+                                    src={`${BaseUrl}${blog.image}`}
                                     className="card-img-top"
                                     alt={blog.title}
                                     style={{

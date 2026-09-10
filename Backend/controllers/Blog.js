@@ -6,8 +6,9 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   //-->> This getAllBlogs is used for 
 const getAllBlogs = async (req, res) => {
     try {
-        // Search
-        const search = String(req.query.search || "").trim();
+        const title = String(req.query.title || "").trim();
+        const description = String(req.query.description || "").trim();
+        const date = String(req.query.date || "").trim();
 
         // Pagination
         const page = Number(req.query.page) || 1;
@@ -17,12 +18,23 @@ const getAllBlogs = async (req, res) => {
         // Filter object
         const filter = {};
 
-        if (search) {
-            const safeSearch = escapeRegex(search);
-            filter.$or = [
-                { title: { $regex: safeSearch, $options: "i" } },
-                { desc: { $regex: safeSearch, $options: "i" } }
-            ];
+        if (title) {
+            filter.title = { $regex: escapeRegex(title), $options: "i" };
+        }
+
+        if (description) {
+            filter.desc = { $regex: escapeRegex(description), $options: "i" };
+        }
+
+        if (date) {
+            const startDate = new Date(`${date}T00:00:00.000Z`);
+            if (Number.isNaN(startDate.getTime())) {
+                return res.status(400).json({ success: false, message: "Invalid date." });
+            }
+
+            const endDate = new Date(startDate);
+            endDate.setUTCDate(endDate.getUTCDate() + 1);
+            filter.createdAt = { $gte: startDate, $lt: endDate };
         }
 
         const blogs = await PostModel.find(filter)

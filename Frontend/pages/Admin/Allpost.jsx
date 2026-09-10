@@ -248,8 +248,7 @@ export const Allpost = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Search
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({ title: "", description: "", date: "" });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -257,12 +256,12 @@ export const Allpost = () => {
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // Fetch the selected page from the backend, including the search term.
-  const getPosts = async (page = 1, searchText = "", limit = rowsPerPage) => {
+  // Fetch the selected page from the backend, including all selected filters.
+  const getPosts = async (page = 1, selectedFilters = filters, limit = rowsPerPage) => {
     try {
       setLoading(true);
 
-      const response = await get("/blog/", { page, limit, search: searchText });
+      const response = await get("/blog/", { page, limit, ...selectedFilters });
 
       setPosts(response.data.blogs);
       setTotalBlogs(response.data.totalBlogs);
@@ -277,29 +276,30 @@ export const Allpost = () => {
 
   // First API call
   useEffect(() => {
-    getPosts(1, "");
+    getPosts(1, { title: "", description: "", date: "" });
   }, []);
 
-  const handleSearch = (event) => {
-    const searchText = event.target.value;
+  const handleFilterChange = (event) => {
+    const nextFilters = { ...filters, [event.target.name]: event.target.value };
 
-    setSearch(searchText);
+    setFilters(nextFilters);
     setResetPaginationToggle((previousValue) => !previousValue);
-    // A new search always starts at page one. The backend filters before
+    // A filter change always starts at page one. The backend filters before
     // calculating pagination, so results and page totals stay correct.
-    getPosts(1, searchText);
+    getPosts(1, nextFilters);
   };
 
-  const clearSearch = () => {
-    setSearch("");
+  const clearFilters = () => {
+    const emptyFilters = { title: "", description: "", date: "" };
+    setFilters(emptyFilters);
     setResetPaginationToggle((previousValue) => !previousValue);
-    getPosts(1, "");
+    getPosts(1, emptyFilters);
   };
 
   const changeRowsPerPage = (nextRowsPerPage) => {
     setRowsPerPage(nextRowsPerPage);
     setResetPaginationToggle((previousValue) => !previousValue);
-    getPosts(1, search, nextRowsPerPage);
+    getPosts(1, filters, nextRowsPerPage);
   };
 
   // Delete
@@ -400,7 +400,7 @@ export const Allpost = () => {
         <button
           type="button"
           className="btn btn-outline-light btn-sm"
-          onClick={() => getPosts(currentPage, search)}
+          onClick={() => getPosts(currentPage, filters)}
           disabled={loading}
         >
           <FaSyncAlt className={loading ? "fa-spin me-2" : "me-2"} />
@@ -410,29 +410,34 @@ export const Allpost = () => {
 
       <div className="card shadow-sm border-0">
         <div className="card-body p-3 p-md-4">
-          <div className="input-group mb-3">
-            <span className="input-group-text bg-white border-end-0">
-              <FaSearch className="text-secondary" />
-            </span>
-            <input
-              type="search"
-              className="form-control border-start-0"
-              placeholder="Search by title or description..."
-              value={search}
-              onChange={handleSearch}
-              aria-label="Search posts"
-            />
-            {search && (
+          <div className="row g-3 mb-3">
+            <div className="col-md-5">
+              <label className="form-label small fw-semibold text-secondary" htmlFor="title-filter">Search by title</label>
+              <div className="input-group">
+                <span className="input-group-text bg-white border-end-0"><FaSearch className="text-secondary" /></span>
+                <input id="title-filter" type="search" name="title" className="form-control border-start-0" placeholder="Post title..." value={filters.title} onChange={handleFilterChange} />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <label className="form-label small fw-semibold text-secondary" htmlFor="description-filter">Search by description</label>
+              <input id="description-filter" type="search" name="description" className="form-control" placeholder="Post description..." value={filters.description} onChange={handleFilterChange} />
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small fw-semibold text-secondary" htmlFor="date-filter">Search by date</label>
+              <input id="date-filter" type="date" name="date" className="form-control" value={filters.date} onChange={handleFilterChange} />
+            </div>
+          </div>
+          {(filters.title || filters.description || filters.date) && (
+            <div className="d-flex justify-content-end mb-3">
               <button
                 type="button"
                 className="btn btn-outline-secondary"
-                onClick={clearSearch}
-                aria-label="Clear search"
+                onClick={clearFilters}
               >
-                <FaTimes className="me-1" /> Clear
+                <FaTimes className="me-1" /> Clear filters
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <DataTable
             columns={columns}
@@ -447,12 +452,12 @@ export const Allpost = () => {
             paginationRowsPerPageOptions={[5, 10, 20, 50]}
             onChangePage={(page) => {
               setCurrentPage(page);
-              getPosts(page, search);
+              getPosts(page, filters);
             }}
             onChangeRowsPerPage={changeRowsPerPage}
             progressPending={loading}
             progressComponent={<div className="py-5 text-secondary">Loading posts...</div>}
-            noDataComponent={<div className="py-5 text-secondary">No posts match your search.</div>}
+            noDataComponent={<div className="py-5 text-secondary">No posts match the selected filters.</div>}
             highlightOnHover
             striped
             responsive

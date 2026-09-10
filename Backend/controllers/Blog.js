@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import PostModel from "../models/Blog.js"
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
   //-->> This getAllBlogs is used for 
 const getAllBlogs = async (req, res) => {
     try {
         // Search
-        const search = req.query.search || "";
+        const search = String(req.query.search || "").trim();
 
         // Pagination
         const page = Number(req.query.page) || 1;
@@ -16,9 +18,10 @@ const getAllBlogs = async (req, res) => {
         const filter = {};
 
         if (search) {
+            const safeSearch = escapeRegex(search);
             filter.$or = [
-                { title: { $regex: search, $options: "i" } },
-                { desc: { $regex: search, $options: "i" } }
+                { title: { $regex: safeSearch, $options: "i" } },
+                { desc: { $regex: safeSearch, $options: "i" } }
             ];
         }
 
@@ -191,3 +194,4 @@ const deletePost = async (req, res) => {
 
 
 export { Create, deletePost, getAllBlogs, getSingleBlog };
+

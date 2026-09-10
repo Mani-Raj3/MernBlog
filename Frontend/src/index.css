@@ -166,3 +166,98 @@ border-radius: 50%;
 .profile-button:hover{
   background-color: #2B6CB0;
 }
+
+
+ /* this is for newly changed sidebar  */
+
+ /* ========================= */
+/* SIDEBAR */
+/* ========================= */
+
+.sidebar {
+  width: 300px;
+  min-height: 100vh;
+  background: #212529;
+  padding-top: 20px;
+}
+
+
+/* Main sidebar items */
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 35px;
+
+  color: white;
+  text-decoration: none;
+
+  font-size: 18px;
+
+  transition: 0.2s;
+}
+
+
+.sidebar-link:hover {
+  background: #343a40;
+  color: white;
+}
+
+
+.sidebar-link.active {
+  background: #343a40;
+  color: white;
+}
+
+
+/* Left side icon + text */
+
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+/* ========================= */
+/* SUB MENU */
+/* ========================= */
+
+.submenu {
+  background: #181b1e;
+  padding: 5px 0 8px 0;
+}
+
+
+.submenu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 13px 35px 13px 65px;
+
+  color: #ced4da;
+
+  text-decoration: none;
+
+  font-size: 16px;
+
+  transition: 0.2s;
+}
+
+
+.submenu-link:hover {
+  background: #343a40;
+  color: white;
+}
+
+
+/* Selected submenu */
+
+.submenu-active {
+  background: #343a40;
+  color: white !important;
+  border-left: 3px solid #0d6efd;
+}

@@ -4,23 +4,21 @@ import jwt from "jsonwebtoken"
 
 const Register = async (req, res) => {
     try {
-        //  const {FullName,email,password}=req.body
+        const FullName = req.body.FullName?.trim();
+        const email = req.body.email?.trim().toLowerCase();
+        const password = req.body.password;
 
-        const FullName = req.body.FullName;
-        const email = req.body.email;
-        // const password = req.body.password || req.body["password "];
-
-
-        const password = req.body.password || req.body["password "];
+        if (!FullName || !email || !password) {
+            return res.status(400).json({ success: false, message: "Full name, email and password are required." });
+        }
 
         const hasepassword = await bcryptjs.hash(password, 10);
 
-
-        const exitUser = await UserModel.find({ email })
-        if (!exitUser) {
-            return res.status(303).json({ success: false, message: "User already Exist Please Login" })
+        const existingUser = await UserModel.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ success: false, message: "User already exists. Please log in." });
         }
-        const imagePath = req.file.filename
+        const imagePath = req.file?.filename || "";
 
         // const hasepassword=await bcryptjs.hashSync(password,10)
         //  const hashedPassword = await bcryptjs.hash(password, 10);
@@ -52,10 +50,13 @@ const Register = async (req, res) => {
         });
 
         await NewUser.save()
-        return res.status(200).json({ success: true, message: "User Register Successfully", User: NewUser })
+        return res.status(201).json({ success: true, message: "User registered successfully", user: NewUser })
     }
     catch (error) {
         console.log(error)
+        if (error.code === 11000) {
+            return res.status(409).json({ success: false, message: "User already exists. Please log in." });
+        }
         return res.status(500).json({ success: false, message: "Internal server error" })
     }
 
@@ -64,7 +65,8 @@ const Register = async (req, res) => {
 
 const Login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = req.body.email?.trim().toLowerCase();
+        const { password } = req.body;
         if (!email || !password) {
             return res.status(400).json({ success: false, message: "All fields are required " });
 

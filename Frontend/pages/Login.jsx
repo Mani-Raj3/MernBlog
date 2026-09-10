@@ -10,6 +10,8 @@ export const Login = () => {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setValue({
@@ -20,13 +22,12 @@ export const Login = () => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+  setError("");
+  setIsSubmitting(true);
 
   try {
     const response = await post("/auth/login", value);
 
-    console.log(response.data);
-
-    // Save token
     localStorage.setItem("token", response.data.token);
 
     // Optional: save user
@@ -40,6 +41,9 @@ const handleSubmit = async (e) => {
 
   } catch (error) {
     console.log("Login error:", error.response?.data || error);
+    setError(error.response?.data?.message || "Unable to sign in. Please try again.");
+  } finally {
+    setIsSubmitting(false);
   }
 };
 
@@ -73,6 +77,8 @@ const handleSubmit = async (e) => {
               <h2 className="fw-bold mb-4">
                 Sign in to your account
               </h2>
+
+              {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
               <form onSubmit={handleSubmit}>
 
@@ -111,8 +117,9 @@ const handleSubmit = async (e) => {
                 <button
                   type="submit"
                   className="btn btn-primary w-100"
+                  disabled={isSubmitting}
                 >
-                  Sign In
+                  {isSubmitting ? "Signing in..." : "Sign In"}
                 </button>
 
               </form>

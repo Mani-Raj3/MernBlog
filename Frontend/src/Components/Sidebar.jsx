@@ -1,44 +1,52 @@
-import React from 'react'
-import { FaFileAlt, FaHome, FaPlusSquare, FaUsers } from "react-icons/fa";
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { FaChevronDown, FaChevronRight, FaFileAlt, FaHome, FaPlusSquare, FaUsers } from "react-icons/fa";
+import { NavLink, useLocation } from "react-router-dom";
+
 export const Sidebar = () => {
+  const { pathname } = useLocation();
+  const isPostRoute = pathname.includes("/dashboard/addpost") || pathname.includes("/dashboard/allposts");
+  const [isPostMenuOpen, setIsPostMenuOpen] = useState(isPostRoute);
+
   return (
-    <>
-      <div
-        className="bg-dark text-white vh-100"
-        style={{ width: "250px" }}>
-       <div className='p-3'>
-        <ul className='nav flex-column'>
-         <li className='nav-item mb-3'>
+    <aside className="sidebar text-white">
+      <nav className="px-2" aria-label="Dashboard navigation">
+        <NavLink
+          to="/dashboard"
+          end
+          className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
+        >
+          <span className="menu-left"><FaHome /> Dashboard</span>
+        </NavLink>
 
-    <Link to={'/dashboard'} className='nav-link text-white'>  
-    <FaHome className="me-2"/> Dashboard
-  </Link>
-   </li>
-  
-<li className='nav-item mb-3'>
-  <Link to={'/dashboard/addpost'} className='nav-link text-white'>  
-   <FaPlusSquare className="me-2"/> Add Post
-  </Link>
-   </li>
+        <button
+          type="button"
+          className={`sidebar-link border-0 w-100 bg-transparent ${isPostRoute ? "active" : ""}`}
+          onClick={() => setIsPostMenuOpen((open) => !open)}
+          aria-expanded={isPostMenuOpen}
+          aria-controls="post-submenu"
+        >
+          <span className="menu-left"><FaFileAlt /> Post</span>
+          {isPostMenuOpen ? <FaChevronDown /> : <FaChevronRight />}
+        </button>
 
-<li className='nav-item mb-3'>
-  <Link to={'/dashboard/users'} className='nav-link text-white'>  
-   <FaUsers className="me-2"/> All Users
-  </Link>
-   </li>
+        {isPostMenuOpen && (
+          <div id="post-submenu" className="submenu">
+            <NavLink to="/dashboard/allposts" className={({ isActive }) => `submenu-link ${isActive ? "submenu-active" : ""}`}>
+              <FaFileAlt /> All Posts
+            </NavLink>
+            <NavLink to="/dashboard/addpost" className={({ isActive }) => `submenu-link ${isActive ? "submenu-active" : ""}`}>
+              <FaPlusSquare /> Add Post
+            </NavLink>
+          </div>
+        )}
 
-<li className='nav-item mb-3'>
-  <Link to={'/dashboard/allposts'} className='nav-link text-white'>  
-   <FaFileAlt className="me-2"/> All Post
-  </Link>
-   </li>
-
-
-                
-</ul>
-   </div>    
-    </div>
-    </>
-  )
-}
+        <NavLink
+          to="/dashboard/users"
+          className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
+        >
+          <span className="menu-left"><FaUsers /> All Users</span>
+        </NavLink>
+      </nav>
+    </aside>
+  );
+};

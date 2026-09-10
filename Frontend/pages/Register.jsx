@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { post } from "../src/services/Endpoint";
 
 export const Register = () => {
+  const navigate = useNavigate();
   const [value, setValue] = useState({
     FullName: "",
     email: "",
@@ -9,18 +11,35 @@ export const Register = () => {
   });
 
   const [image, setImage] = useState(null);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setValue({ ...value, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
-    console.log(value);
-    console.log(image);
+    const formData = new FormData();
+    formData.append("FullName", value.FullName);
+    formData.append("email", value.email);
+    formData.append("password", value.password);
 
-    // API Call Here
+    if (image) {
+      formData.append("profile", image);
+    }
+
+    try {
+      await post("/auth/register", formData);
+      navigate("/login", { replace: true });
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to create your account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,6 +73,8 @@ export const Register = () => {
                 <h2 className="fw-bold mb-4">
                   Create an account
                 </h2>
+
+                {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
                 <form
                   onSubmit={handleSubmit}
@@ -159,8 +180,9 @@ export const Register = () => {
                   <button
                     type="submit"
                     className="btn btn-primary w-100"
+                    disabled={isSubmitting}
                   >
-                    Sign Up
+                    {isSubmitting ? "Creating account..." : "Sign Up"}
                   </button>
 
                   <p className="text-center mt-3 mb-0">

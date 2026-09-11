@@ -17,7 +17,7 @@ export const User = () => {
   const [exporting, setExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
   const getUsers = async (page = 1, selectedFilters = filters, limit = rowsPerPage) => {
@@ -105,7 +105,7 @@ export const User = () => {
     { name: "Profile", cell: (row) => row.profile ? <img src={`${BaseUrl}/images/${row.profile}`} alt="" className="rounded-circle" style={{ width: 42, height: 42, objectFit: "cover" }} /> : <span className="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style={{ width: 42, height: 42 }}>{row.FullName?.charAt(0)?.toUpperCase()}</span>, width: "90px" },
     { name: "Name", selector: (row) => row.FullName, sortable: true, grow: 2 },
     { name: "Email", selector: (row) => row.email, sortable: true, grow: 2 },
-    { name: "Role", selector: (row) => row.role, sortable: true, cell: (row) => <span className={`badge text-bg-${row.role === "admin" ? "primary" : "secondary"}`}>{row.role}</span> },
+    { name: "Role", selector: (row) => row.role, sortable: true, cell: (row) => <span className="badge text-bg-secondary">user</span> },
     { name: "Joined", selector: (row) => row.createdAt, sortable: true, format: (row) => new Date(row.createdAt).toLocaleDateString("en-IN") },
     { name: "Action", cell: (row) => <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(row._id)}><FaTrashAlt /> Delete</button>, width: "120px" },
   ];
@@ -126,7 +126,7 @@ export const User = () => {
           <div className="col-lg-3"><label htmlFor="user-date-filter" className="form-label small fw-semibold text-secondary">Search by date</label><input id="user-date-filter" type="date" name="date" className="form-control" value={filters.date} onChange={handleFilterChange} /></div>
           <div className="col-lg-3"><button type="button" className="btn btn-outline-secondary w-100" onClick={clearFilters} disabled={!filters.name && !filters.email && !filters.date}><FaTimes className="me-1" /> Clear filters</button></div>
         </div>
-        <DataTable columns={columns} data={users} keyField="_id" pagination paginationServer paginationResetDefaultPage={resetPaginationToggle} paginationTotalRows={totalUsers} paginationDefaultPage={currentPage} paginationPerPage={rowsPerPage} paginationRowsPerPageOptions={[5, 10, 20, 50]} onChangePage={(page) => { setCurrentPage(page); getUsers(page, filters); }} onChangeRowsPerPage={(limit) => { setRowsPerPage(limit); setResetPaginationToggle((value) => !value); getUsers(1, filters, limit); }} progressPending={loading} progressComponent={<div className="py-5 text-secondary">Loading users...</div>} noDataComponent={<div className="py-5 text-secondary">No users match the selected filters.</div>} highlightOnHover striped responsive persistTableHead customStyles={tableStyles} />
+        <DataTable columns={columns} data={users} keyField="_id" pagination paginationServer paginationResetDefaultPage={resetPaginationToggle} paginationTotalRows={totalUsers} paginationDefaultPage={currentPage} paginationPerPage={rowsPerPage} paginationRowsPerPageOptions={[10, 20, 50]} onChangePage={(page) => { setCurrentPage(page); getUsers(page, filters); }} onChangeRowsPerPage={(limit) => { setRowsPerPage(limit); setResetPaginationToggle((value) => !value); getUsers(1, filters, limit); }} progressPending={loading} progressComponent={<div className="py-5 text-secondary">Loading users...</div>} noDataComponent={<div className="py-5 text-secondary">No users match the selected filters.</div>} highlightOnHover striped responsive persistTableHead customStyles={tableStyles} />
       </div></div>
     </div>
   );

@@ -134,7 +134,9 @@ const GetAllUsers = async (req, res) => {
         const date = String(req.query.date || "").trim();
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 5;
-        const filter = {};
+        // The All Users screen is intended to manage regular user accounts only.
+        // Keep this in the query so pagination, filters, and exports never include admins.
+        const filter = { role: "user" };
 
         if (name) filter.FullName = { $regex: escapeRegex(name), $options: "i" };
         if (email) filter.email = { $regex: escapeRegex(email), $options: "i" };

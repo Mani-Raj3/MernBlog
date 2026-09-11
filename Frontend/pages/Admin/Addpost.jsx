@@ -63,22 +63,42 @@
 // }
 
 
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { post } from '../../src/services/Endpoint'
 
 export const Addpost = () => {
+  const navigate = useNavigate();
 
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSumbit = (e) => {
+  const handleSumbit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    console.log({
-      image,
-      title,
-      description
-    });
+    if (!image) {
+      setError("Please select a post image.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("postimage", image);
+    formData.append("title", title);
+    formData.append("desc", description);
+
+    try {
+      setIsSubmitting(true);
+      await post("/blog/create", formData);
+      navigate("/dashboard/allposts", { replace: true });
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to create the post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -95,6 +115,8 @@ export const Addpost = () => {
 
               <div className="card-body p-4">
 
+                {error && <div className="alert alert-danger" role="alert">{error}</div>}
+
                 <form
                   method="post"
                   encType="multipart/form-data"
@@ -110,7 +132,9 @@ export const Addpost = () => {
                       type="file"
                       className="form-control"
                       id="image"
+                      accept="image/*"
                       onChange={(e) => setImage(e.target.files[0])}
+                      required
                     />
                   </div>
 
@@ -150,8 +174,9 @@ export const Addpost = () => {
                     <button
                       type="submit"
                       className="btn btn-primary btn-lg"
+                      disabled={isSubmitting}
                     >
-                      Submit Post
+                      {isSubmitting ? "Publishing..." : "Submit Post"}
                     </button>
                   </div>
 

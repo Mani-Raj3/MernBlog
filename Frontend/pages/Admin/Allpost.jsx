@@ -1,230 +1,10 @@
-// import React, { useEffect, useState } from "react";
-// import DataTable from "react-data-table-component";
-// import { FaEdit, FaTrashAlt } from "react-icons/fa";
-// import { BaseUrl, del, get } from "../../src/services/Endpoint";
-
-// export const Allpost = () => {
-//   const [posts, setPosts] = useState([]);
-//   const [loading, setLoading] = useState(false);
-
-//   // Search
-//   const [search, setSearch] = useState("");
-
-//   // Pagination
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [totalBlogs, setTotalBlogs] = useState(0);
-
-//   // =========================
-//   // GET BLOGS
-//   // =========================
-//   const getPosts = async (page = 1, searchText = "") => {
-//     try {
-//       setLoading(true);
-
-//       const response = await get("/blog/", {
-//         page: page,
-//         search: searchText,
-//       });
-
-//       console.log(response.data);
-
-//       setPosts(response.data.blogs);
-//       setTotalBlogs(response.data.totalBlogs);
-//       setCurrentPage(response.data.currentPage);
-//     } catch (error) {
-//       console.log("Error fetching blogs:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // =========================
-//   // FIRST API CALL
-//   // =========================
-//   useEffect(() => {
-//     getPosts(1, "");
-//   }, []);
-
-//   // =========================
-//   // SEARCH
-//   // =========================
-//   const handleSearch = (e) => {
-//     const value = e.target.value;
-
-//     setSearch(value);
-
-//     // Search from page 1
-//     getPosts(1, value);
-//   };
-
-//   // =========================
-//   // DELETE
-//   // =========================
-//   const handleDelete = async (id) => {
-//     try {
-//       await del(`/blog/delete/${id}`);
-
-//       // Remove deleted post from UI
-//       setPosts((prevPosts) =>
-//         prevPosts.filter((post) => post._id !== id)
-//       );
-
-//       // Decrease total count
-//       setTotalBlogs((prev) => prev - 1);
-//     } catch (error) {
-//       console.log(
-//         "Delete error:",
-//         error.response?.data || error.message
-//       );
-//     }
-//   };
-
-//   // =========================
-//   // UPDATE
-//   // =========================
-//   const handleUpdate = (id) => {
-//     console.log("Update ID:", id);
-//   };
-
-//   // =========================
-//   // COLUMNS
-//   // =========================
-//   const columns = [
-//     {
-//       name: "Image",
-
-//       cell: (row) => (
-//         <img
-//           src={`${BaseUrl}${row.image}`}
-//           alt={row.title}
-//           style={{
-//             width: "60px",
-//             height: "60px",
-//             objectFit: "cover",
-//             borderRadius: "8px",
-//           }}
-//         />
-//       ),
-
-//       width: "100px",
-//     },
-
-//     {
-//       name: "Title",
-//       selector: (row) => row.title,
-//       sortable: true,
-//       grow: 2,
-//     },
-
-//     {
-//       name: "Description",
-//       selector: (row) => row.desc,
-//       sortable: true,
-//       grow: 3,
-//     },
-
-//     {
-//       name: "Created At",
-//       selector: (row) => row.createdAt,
-//       sortable: true,
-
-//       format: (row) =>
-//         new Date(row.createdAt).toLocaleDateString("en-IN"),
-//     },
-
-//     {
-//       name: "Actions",
-
-//       cell: (row) => (
-//         <div className="d-flex gap-2">
-
-//           <button
-//             className="btn btn-warning btn-sm"
-//             onClick={() => handleUpdate(row._id)}
-//           >
-//             <FaEdit /> Update
-//           </button>
-
-//           <button
-//             className="btn btn-danger btn-sm"
-//             onClick={() => handleDelete(row._id)}
-//           >
-//             <FaTrashAlt /> Delete
-//           </button>
-
-//         </div>
-//       ),
-
-//       width: "220px",
-//     },
-//   ];
-
-//   // =========================
-//   // SEARCH COMPONENT
-//   // =========================
-//   const searchComponent = (
-//     <input
-//       type="text"
-//       className="form-control"
-//       placeholder="Search title or description..."
-//       value={search}
-//       onChange={handleSearch}
-//       style={{
-//         width: "300px",
-//         marginBottom: "10px",
-//       }}
-//     />
-//   );
-
-//   // =========================
-//   // RETURN
-//   // =========================
-//   return (
-//     <div className="container mt-5">
-
-//       <h2 className="text-white mb-4">
-//         All Posts
-//       </h2>
-
-//       <DataTable
-//         columns={columns}
-//         data={posts}
-
-//         keyField="_id"
-
-//         // Search inside DataTable
-//         subHeader
-//         subHeaderComponent={searchComponent}
-//         subHeaderAlign="right"
-
-//         // Pagination
-//         pagination
-//         paginationServer
-//         paginationTotalRows={totalBlogs}
-//         paginationDefaultPage={currentPage}
-
-//         onChangePage={(page) => {
-//           setCurrentPage(page);
-//           getPosts(page, search);
-//         }}
-
-//         // Loading
-//         progressPending={loading}
-
-//         // UI
-//         highlightOnHover
-//         striped
-//         responsive
-//       />
-
-//     </div>
-//   );
-// };
-
 
 import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
-import { FaEdit, FaSearch, FaSyncAlt, FaTimes, FaTrashAlt } from "react-icons/fa";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FaEdit, FaFileCsv, FaFilePdf, FaPlus, FaSearch, FaTimes, FaTrashAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { BaseUrl, del, get } from "../../src/services/Endpoint";
 
 const tableStyles = {
@@ -255,6 +35,7 @@ export const Allpost = () => {
   const [totalBlogs, setTotalBlogs] = useState(0);
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [exporting, setExporting] = useState(false);
 
   // Fetch the selected page from the backend, including all selected filters.
   const getPosts = async (page = 1, selectedFilters = filters, limit = rowsPerPage) => {
@@ -300,6 +81,62 @@ export const Allpost = () => {
     setRowsPerPage(nextRowsPerPage);
     setResetPaginationToggle((previousValue) => !previousValue);
     getPosts(1, filters, nextRowsPerPage);
+  };
+
+  const getExportPosts = async () => {
+    const response = await get("/blog/", { page: 1, limit: Math.max(totalBlogs, 1), ...filters });
+    return response.data.blogs;
+  };
+
+  const exportCsv = async () => {
+    try {
+      setExporting(true);
+      const exportPosts = await getExportPosts();
+      const escapeCsvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+      const rows = exportPosts.map((post) => [
+        post.title,
+        post.desc,
+        new Date(post.createdAt).toLocaleDateString("en-IN"),
+      ]);
+      const csv = [["Title", "Description", "Created At"], ...rows]
+        .map((row) => row.map(escapeCsvValue).join(","))
+        .join("\n");
+      const file = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(file);
+      link.download = "posts.csv";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.log("CSV export error:", error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const exportPdf = async () => {
+    try {
+      setExporting(true);
+      const exportPosts = await getExportPosts();
+      const document = new jsPDF();
+      document.text("Posts", 14, 15);
+      autoTable(document, {
+        startY: 22,
+        head: [["Title", "Description", "Created At"]],
+        body: exportPosts.map((post) => [
+          post.title,
+          post.desc,
+          new Date(post.createdAt).toLocaleDateString("en-IN"),
+        ]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [33, 37, 41] },
+      });
+      document.save("posts.pdf");
+    } catch (error) {
+      console.log("PDF export error:", error);
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Delete
@@ -397,47 +234,41 @@ export const Allpost = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-outline-light btn-sm"
-          onClick={() => getPosts(currentPage, filters)}
-          disabled={loading}
-        >
-          <FaSyncAlt className={loading ? "fa-spin me-2" : "me-2"} />
-          Refresh
-        </button>
+        <div className="d-flex flex-wrap gap-2">
+          <Link to="/dashboard/addpost" className="btn btn-primary btn-sm"><FaPlus className="me-1" /> Add Post</Link>
+          <button type="button" className="btn btn-outline-light btn-sm" onClick={exportCsv} disabled={exporting || !totalBlogs}>
+            <FaFileCsv className="me-1" /> CSV
+          </button>
+          <button type="button" className="btn btn-outline-light btn-sm" onClick={exportPdf} disabled={exporting || !totalBlogs}>
+            <FaFilePdf className="me-1" /> PDF
+          </button>
+        </div>
       </div>
 
       <div className="card shadow-sm border-0">
         <div className="card-body p-3 p-md-4">
-          <div className="row g-3 mb-3">
-            <div className="col-md-5">
+          <div className="row g-2 align-items-end mb-3">
+            <div className="col-lg-3">
               <label className="form-label small fw-semibold text-secondary" htmlFor="title-filter">Search by title</label>
               <div className="input-group">
                 <span className="input-group-text bg-white border-end-0"><FaSearch className="text-secondary" /></span>
                 <input id="title-filter" type="search" name="title" className="form-control border-start-0" placeholder="Post title..." value={filters.title} onChange={handleFilterChange} />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-lg-3">
               <label className="form-label small fw-semibold text-secondary" htmlFor="description-filter">Search by description</label>
               <input id="description-filter" type="search" name="description" className="form-control" placeholder="Post description..." value={filters.description} onChange={handleFilterChange} />
             </div>
-            <div className="col-md-3">
+            <div className="col-lg-3">
               <label className="form-label small fw-semibold text-secondary" htmlFor="date-filter">Search by date</label>
               <input id="date-filter" type="date" name="date" className="form-control" value={filters.date} onChange={handleFilterChange} />
             </div>
-          </div>
-          {(filters.title || filters.description || filters.date) && (
-            <div className="d-flex justify-content-end mb-3">
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={clearFilters}
-              >
+            <div className="col-lg-3">
+              <button type="button" className="btn btn-outline-secondary w-100" onClick={clearFilters} disabled={!filters.title && !filters.description && !filters.date}>
                 <FaTimes className="me-1" /> Clear filters
               </button>
             </div>
-          )}
+          </div>
 
           <DataTable
             columns={columns}

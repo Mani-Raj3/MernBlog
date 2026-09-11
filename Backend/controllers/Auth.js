@@ -1,6 +1,9 @@
 import UserModel from "../models/user.js"
 import bcryptjs from 'bcryptjs'
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const Register = async (req, res) => {
     try {
@@ -124,4 +127,49 @@ const Logout = async (req, res) => {
 
 
 
-export { Register, Login, Logout }
+const GetAllUsers = async (req, res) => {
+    try {
+        const name = String(req.query.name || "").trim();
+        const email = String(req.query.email || "").trim();
+        const date = String(req.query.date || "").trim();
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 5;
+        const filter = {};
+
+        if (name) filter.FullName = { $regex: escapeRegex(name), $options: "i" };
+        if (email) filter.email = { $regex: escapeRegex(email), $options: "i" };
+        if (date) {
+            const startDate = new Date(`${date}T00:00:00.000Z`);
+            if (Number.isNaN(startDate.getTime())) return res.status(400).json({ success: false, message: "Invalid date." });
+            const endDate = new Date(startDate);
+            endDate.setUTCDate(endDate.getUTCDate() + 1);
+            filter.createdAt = { $gte: startDate, $lt: endDate };
+        }
+
+        const [users, totalUsers] = await Promise.all([
+            UserModel.find(filter).select("-password").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+            UserModel.countDocuments(filter),
+        ]);
+        return res.status(200).json({ success: true, users, totalUsers, currentPage: page, totalPages: Math.ceil(totalUsers / limit) });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+const DeleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ success: false, message: "Invalid user ID." });
+        if (req.user._id.toString() === id) return res.status(400).json({ success: false, message: "You cannot delete your own account." });
+
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) return res.status(404).json({ success: false, message: "User not found." });
+        return res.status(200).json({ success: true, message: "User deleted successfully." });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export { Register, Login, Logout, GetAllUsers, DeleteUser }

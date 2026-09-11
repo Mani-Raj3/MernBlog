@@ -110,8 +110,14 @@ const getSingleBlog = async (req, res) => {
  // -->> 
 const Create=async(req,res)=>{
     try {
-        const{title, desc}=req.body
-          const imageFile=req.file.filename
+        const title = req.body.title?.trim();
+        const desc = req.body.desc?.trim();
+
+        if (!title || !desc || !req.file) {
+            return res.status(400).json({ success: false, message: "Title, description and image are required." });
+        }
+
+        const imageFile = req.file.filename;
 
         /// ye blog ka request shi se chal rha h ki nhi use check krne k liy h 
        //  res.send('Hello from Blogs')

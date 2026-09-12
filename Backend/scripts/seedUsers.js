@@ -12,6 +12,12 @@ const sampleUsers = [
   { FullName: "Ananya Singh", email: "ananya.singh@example.com" },
   { FullName: "Vikram Mehta", email: "vikram.mehta@example.com" },
   { FullName: "Neha Gupta", email: "neha.gupta@example.com" },
+  { FullName: "Kabir Kapoor", email: "kabir.kapoor@example.com" },
+  { FullName: "Isha Nair", email: "isha.nair@example.com" },
+  { FullName: "Arjun Rao", email: "arjun.rao@example.com" },
+  { FullName: "Meera Iyer", email: "meera.iyer@example.com" },
+  { FullName: "Siddharth Jain", email: "siddharth.jain@example.com" },
+  { FullName: "Kavya Desai", email: "kavya.desai@example.com" },
 ];
 
 const seedUsers = async () => {

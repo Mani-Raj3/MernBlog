@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FaFileCsv, FaFilePdf, FaSearch, FaTimes, FaTrashAlt } from "react-icons/fa";
 import { BaseUrl, del, get } from "../../src/services/Endpoint";
+import Swal from "sweetalert2";
 
 const tableStyles = {
   headCells: { style: { backgroundColor: "#212529", color: "#fff", fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase" } },
@@ -92,12 +93,22 @@ export const User = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this user? This cannot be undone.")) return;
+    const result = await Swal.fire({
+      title: "Delete this user?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      confirmButtonText: "Yes, delete user",
+    });
+    if (!result.isConfirmed) return;
+
     try {
       await del(`/auth/users/${id}`);
       getUsers(currentPage, filters);
+      await Swal.fire({ title: "Deleted", text: "The user has been deleted.", icon: "success" });
     } catch (error) {
-      window.alert(error.response?.data?.message || "Unable to delete user.");
+      await Swal.fire({ title: "Delete failed", text: error.response?.data?.message || "Unable to delete user.", icon: "error" });
     }
   };
 

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import PostModel from "../models/Blog.js"
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isValidTitle = (title) => /^[A-Za-z\s]+$/.test(title) && title.split(/\s+/).filter(Boolean).length <= 50;
 
   //-->> This getAllBlogs is used for 
 const getAllBlogs = async (req, res) => {
@@ -116,6 +117,9 @@ const Create=async(req,res)=>{
         if (!title || !desc || !req.file) {
             return res.status(400).json({ success: false, message: "Title, description and image are required." });
         }
+        if (!isValidTitle(title)) {
+            return res.status(400).json({ success: false, message: "Title must contain only letters and spaces, with a maximum of 50 words." });
+        }
 
         const imageFile = req.file.filename;
 
@@ -137,6 +141,34 @@ const Create=async(req,res)=>{
 
     }
 }
+
+const Update = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const title = req.body.title?.trim();
+        const desc = req.body.desc?.trim();
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: "Invalid post ID." });
+        }
+        if (!title || !desc) {
+            return res.status(400).json({ success: false, message: "Title and description are required." });
+        }
+        if (!isValidTitle(title)) {
+            return res.status(400).json({ success: false, message: "Title must contain only letters and spaces, with a maximum of 50 words." });
+        }
+
+        const updates = { title, desc };
+        if (req.file) updates.image = `/images/${req.file.filename}`;
+
+        const post = await PostModel.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+        if (!post) return res.status(404).json({ success: false, message: "Post not found." });
+        return res.status(200).json({ success: true, message: "Post updated successfully.", post });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
 
 
 const deletePost = async (req, res) => {
@@ -211,5 +243,5 @@ const deletePost = async (req, res) => {
 
 
 
-export { Create, deletePost, getAllBlogs, getSingleBlog };
+export { Create, Update, deletePost, getAllBlogs, getSingleBlog };
 

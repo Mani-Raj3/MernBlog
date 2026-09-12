@@ -4,7 +4,8 @@ import DataTable from "react-data-table-component";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FaEdit, FaFileCsv, FaFilePdf, FaPlus, FaSearch, FaTimes, FaTrashAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { BaseUrl, del, get } from "../../src/services/Endpoint";
 
 const tableStyles = {
@@ -25,6 +26,7 @@ const tableStyles = {
 };
 
 export const Allpost = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -141,21 +143,43 @@ export const Allpost = () => {
 
   // Delete
   const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Delete this post?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      confirmButtonText: "Yes, delete it",
+    });
+    if (!result.isConfirmed) return;
+
     try {
       await del(`/blog/delete/${id}`);
 
       setPosts((prevPosts) =>
         prevPosts.filter((post) => post._id !== id)
       );
-
+      setTotalBlogs((count) => Math.max(0, count - 1));
+      await Swal.fire({ title: "Deleted", text: "The post has been deleted.", icon: "success" });
     } catch (error) {
       console.log("Delete error:", error);
+      await Swal.fire({ title: "Delete failed", text: error.response?.data?.message || "Unable to delete the post.", icon: "error" });
     }
   };
 
   // Update
-  const handleUpdate = (id) => {
-    console.log("Update ID:", id);
+  const handleUpdate = async (id) => {
+    const result = await Swal.fire({
+      title: "Update this post?",
+      text: "You can edit its title, description, or image on the next screen.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#0d6efd",
+      confirmButtonText: "Continue to update",
+    });
+    if (result.isConfirmed) {
+      navigate(`/dashboard/editpost/${id}`);
+    }
   };
 
   // Columns

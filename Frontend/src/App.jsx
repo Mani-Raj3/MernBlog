@@ -25,6 +25,7 @@ export default function App() {
 <Route path='/dashboard' element={<AdminLayout/>}>
 <Route index element={<Dashboard/>}/>
 <Route path='addpost' element={<Addpost/>}/>
+<Route path='editpost/:id' element={<Addpost/>}/>
 <Route path='users' element={<User/>}/>
 <Route path='allposts' element={<Allpost/>}/>
 
@@ -45,5 +46,4 @@ export default function App() {
  </>
   )
 }
-
 

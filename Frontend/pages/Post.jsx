@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import { useParams } from "react-router-dom";
 import { BaseUrl, get } from "../src/services/Endpoint";
 
@@ -57,9 +58,12 @@ export const Post = () => {
             }}
           />
 
-          <p className="fs-5">
-            {blog.desc}
-          </p>
+          <div
+        className="fs-5"
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(blog.desc)
+        }}
+      />
 
           <p className="text-secondary">
             Posted on{" "}

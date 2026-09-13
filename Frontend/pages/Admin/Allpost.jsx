@@ -124,8 +124,9 @@ export const Allpost = () => {
       document.text("Posts", 14, 15);
       autoTable(document, {
         startY: 22,
-        head: [["Title", "Description", "Created At"]],
+        head: [["Image","Title", "Description", "Created At"]],
         body: exportPosts.map((post) => [
+          post.image,
           post.title,
           post.desc,
           new Date(post.createdAt).toLocaleDateString("en-IN"),

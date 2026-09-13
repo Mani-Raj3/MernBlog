@@ -261,3 +261,12 @@ border-radius: 50%;
   color: white !important;
   border-left: 3px solid #0d6efd;
 }
+
+.rich-editor .ql-container {
+  height: 300px;
+}
+
+.rich-editor .ql-editor {
+  height: 100%;
+  overflow-y: auto;
+}

@@ -3,9 +3,69 @@ import PostModel from "../models/Blog.js"
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isValidTitle = (title) => /^[A-Za-z\s]+$/.test(title) && title.split(/\s+/).filter(Boolean).length <= 50;
+const isValidSlug = (slug) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+const isValidStatus = (status) => ["active", "inactive"].includes(status);
 
   //-->> This getAllBlogs is used for 
 const getAllBlogs = async (req, res) => {
+    try {
+        const title = String(req.query.title || "").trim();
+        const description = String(req.query.description || "").trim();
+        const date = String(req.query.date || "").trim();
+
+        // Pagination
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        // Filter object
+        const filter = {};
+
+        if (title) {
+            filter.title = { $regex: escapeRegex(title), $options: "i" };
+        }
+
+        if (description) {
+            filter.desc = { $regex: escapeRegex(description), $options: "i" };
+        }
+
+        if (date) {
+            const startDate = new Date(`${date}T00:00:00.000Z`);
+            if (Number.isNaN(startDate.getTime())) {
+                return res.status(400).json({ success: false, message: "Invalid date." });
+            }
+
+            const endDate = new Date(startDate);
+            endDate.setUTCDate(endDate.getUTCDate() + 1);
+            filter.createdAt = { $gte: startDate, $lt: endDate };
+        }
+
+        const blogs = await PostModel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalBlogs = await PostModel.countDocuments(filter);
+
+        return res.status(200).json({
+            success: true,
+            totalBlogs,
+            currentPage: page,
+            totalPages: Math.ceil(totalBlogs / limit),
+            blogs
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+const getAllActiveBlogs = async (req, res) => {
     try {
         const title = String(req.query.title || "").trim();
         const description = String(req.query.description || "").trim();
@@ -113,13 +173,18 @@ const Create=async(req,res)=>{
     try {
         const title = req.body.title?.trim();
         const desc = req.body.desc?.trim();
+        const slug = req.body.slug?.trim().toLowerCase();
+        const status = req.body.status;
 
-        if (!title || !desc || !req.file) {
-            return res.status(400).json({ success: false, message: "Title, description and image are required." });
+        if (!title || !slug || !desc || !req.file) {
+            return res.status(400).json({ success: false, message: "Title, slug, description and image are required." });
         }
         if (!isValidTitle(title)) {
             return res.status(400).json({ success: false, message: "Title must contain only letters and spaces, with a maximum of 50 words." });
         }
+        if (!isValidSlug(slug)) return res.status(400).json({ success: false, message: "Slug can use lowercase letters, numbers and single hyphens only." });
+        if (!isValidStatus(status)) return res.status(400).json({ success: false, message: "Status must be active or inactive." });
+        if (await PostModel.exists({ slug })) return res.status(409).json({ success: false, message: "This slug is already in use." });
 
         const imageFile = req.file.filename;
 
@@ -128,8 +193,10 @@ const Create=async(req,res)=>{
 
        const CreateBlog= new PostModel({
         title,
+        slug,
         desc,
-        image:`/images/${imageFile}`
+        image:`/images/${imageFile}`,
+        status,
        })
        await CreateBlog.save()   //-->> for post creation....
         return res.status(200).json({success:true,message:"Post Created Successfullyy",post:CreateBlog})
@@ -147,18 +214,23 @@ const Update = async (req, res) => {
         const { id } = req.params;
         const title = req.body.title?.trim();
         const desc = req.body.desc?.trim();
+        const slug = req.body.slug?.trim().toLowerCase();
+        const status = req.body.status;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ success: false, message: "Invalid post ID." });
         }
-        if (!title || !desc) {
-            return res.status(400).json({ success: false, message: "Title and description are required." });
+        if (!title || !slug || !desc) {
+            return res.status(400).json({ success: false, message: "Title, slug and description are required." });
         }
         if (!isValidTitle(title)) {
             return res.status(400).json({ success: false, message: "Title must contain only letters and spaces, with a maximum of 50 words." });
         }
+        if (!isValidSlug(slug)) return res.status(400).json({ success: false, message: "Slug can use lowercase letters, numbers and single hyphens only." });
+        if (!isValidStatus(status)) return res.status(400).json({ success: false, message: "Status must be active or inactive." });
+        if (await PostModel.exists({ slug, _id: { $ne: id } })) return res.status(409).json({ success: false, message: "This slug is already in use." });
 
-        const updates = { title, desc };
+        const updates = { title, slug, desc, status };
         if (req.file) updates.image = `/images/${req.file.filename}`;
 
         const post = await PostModel.findByIdAndUpdate(id, updates, { new: true, runValidators: true });

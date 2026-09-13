@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BaseUrl, get } from "../services/Endpoint";
+import { stripHtmlAndLimit } from "../utils/textUtils";
 
 export const Recentpost = () => {
 
     const navigate = useNavigate();
-
+  const [filters, setFilters] = useState({ title: "", description: "", date: "" });
     const [blogs, setBlogs] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const getBlogs = async (pageNo = 1) => {
+    const getBlogs = async (pageNo = 1,selectedFilters = filter) => {
         try {
 
-            const res = await get("/blog", { page: pageNo });
-
+            const res = await get("/blog", { page: pageNo,  ...selectedFilters });
+  
             setBlogs(res.data.blogs);
             setPage(res.data.currentPage);
             setTotalPages(res.data.totalPages);
@@ -69,7 +70,7 @@ console.log(res);
 
                                     <h5>{blog.title}</h5>
 
-                                    <p>{blog.desc}</p>
+                                   {stripHtmlAndLimit(blog.desc, 50)}
 
                                     <button
                                         className="btn btn-primary w-100 mt-3"

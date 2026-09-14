@@ -10,8 +10,8 @@ const Register = async (req, res) => {
         const FullName = req.body.FullName?.trim();
         const email = req.body.email?.trim().toLowerCase();
         const password = req.body.password;
-
-        if (!FullName || !email || !password) {
+        const gender = req.body.gender;
+        if (!FullName || !email || !password || !gender) {
             return res.status(400).json({ success: false, message: "Full name, email and password are required." });
         }
 
@@ -48,6 +48,7 @@ const Register = async (req, res) => {
         const NewUser = new UserModel({
             FullName,
             email,
+            gender,
             password: hasepassword,
             profile: imagePath
         });

@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { FaFileCsv, FaFilePdf, FaSearch, FaTimes, FaTrashAlt } from "react-icons/fa";
+import {
+  FaFileCsv,
+  FaFilePdf,
+  FaSearch,
+  FaTimes,
+  FaTrashAlt,
+} from "react-icons/fa";
 import { BaseUrl, del, get } from "../../src/services/Endpoint";
 import Swal from "sweetalert2";
 
@@ -13,18 +19,25 @@ const tableStyles = {
       color: "#fff",
       fontSize: "0.8rem",
       fontWeight: 700,
-      textTransform: "uppercase"
-    }
+      textTransform: "uppercase",
+    },
   },
   rows: {
     style: { minHeight: "70px" },
-    highlightOnHoverStyle: { backgroundColor: "#eef5ff" }
-  }
+    highlightOnHoverStyle: { backgroundColor: "#eef5ff" },
+  },
 };
 
 export const User = () => {
   const [users, setUsers] = useState([]);
-  const [filters, setFilters] = useState({ name: "", email: "", date: "" });
+
+  const [filters, setFilters] = useState({
+    name: "",
+    email: "",
+    gender: "",
+    date: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,33 +45,61 @@ export const User = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
-  const getUsers = async (page = 1, selectedFilters = filters, limit = rowsPerPage) => {
+  const getUsers = async (
+    page = 1,
+    selectedFilters = filters,
+    limit = rowsPerPage
+  ) => {
     try {
       setLoading(true);
-      const response = await get("/auth/users", { page, limit, ...selectedFilters });
+
+      const response = await get("/auth/users", {
+        page,
+        limit,
+        ...selectedFilters,
+      });
+
       setUsers(response.data.users);
       setTotalUsers(response.data.totalUsers);
       setCurrentPage(response.data.currentPage);
     } catch (error) {
-      console.log("Unable to get users:", error.response?.data || error);
+      console.log(
+        "Unable to get users:",
+        error.response?.data || error
+      );
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getUsers(1, { name: "", email: "", date: "" });
+    getUsers(1, {
+      name: "",
+      email: "",
+      gender: "",
+      date: "",
+    });
   }, []);
 
   const handleFilterChange = (event) => {
-    const nextFilters = { ...filters, [event.target.name]: event.target.value };
+    const nextFilters = {
+      ...filters,
+      [event.target.name]: event.target.value,
+    };
+
     setFilters(nextFilters);
     setResetPaginationToggle((value) => !value);
     getUsers(1, nextFilters);
   };
 
   const clearFilters = () => {
-    const emptyFilters = { name: "", email: "", date: "" };
+    const emptyFilters = {
+      name: "",
+      email: "",
+      gender: "",
+      date: "",
+    };
+
     setFilters(emptyFilters);
     setResetPaginationToggle((value) => !value);
     getUsers(1, emptyFilters);
@@ -68,14 +109,16 @@ export const User = () => {
     const response = await get("/auth/users", {
       page: 1,
       limit: Math.max(totalUsers, 1),
-      ...filters
+      ...filters,
     });
+
     return response.data.users;
   };
 
   const exportCsv = async () => {
     try {
       setExporting(true);
+
       const exportUsers = await getExportUsers();
 
       const escapeCsvValue = (value) =>
@@ -88,18 +131,23 @@ export const User = () => {
           user.gender || "N/A",
           user.email,
           user.role,
-          new Date(user.createdAt).toLocaleDateString("en-IN")
-        ])
+          new Date(user.createdAt).toLocaleDateString("en-IN"),
+        ]),
       ]
         .map((row) => row.map(escapeCsvValue).join(","))
         .join("\n");
 
       const link = document.createElement("a");
+
       link.href = URL.createObjectURL(
-        new Blob([csv], { type: "text/csv;charset=utf-8;" })
+        new Blob([csv], {
+          type: "text/csv;charset=utf-8;",
+        })
       );
+
       link.download = "users.csv";
       link.click();
+
       URL.revokeObjectURL(link.href);
     } catch (error) {
       console.log("CSV export error:", error);
@@ -111,23 +159,35 @@ export const User = () => {
   const exportPdf = async () => {
     try {
       setExporting(true);
+
       const exportUsers = await getExportUsers();
 
       const pdf = new jsPDF();
+
       pdf.text("Users", 14, 15);
 
       autoTable(pdf, {
         startY: 22,
-        head: [["Name", "Gender", "Email", "Role", "Joined On"]],
+
+        head: [
+          ["Name", "Gender", "Email", "Role", "Joined On"],
+        ],
+
         body: exportUsers.map((user) => [
           user.FullName,
           user.gender || "N/A",
           user.email,
           user.role,
-          new Date(user.createdAt).toLocaleDateString("en-IN")
+          new Date(user.createdAt).toLocaleDateString("en-IN"),
         ]),
-        styles: { fontSize: 9 },
-        headStyles: { fillColor: [33, 37, 41] }
+
+        styles: {
+          fontSize: 9,
+        },
+
+        headStyles: {
+          fillColor: [33, 37, 41],
+        },
       });
 
       pdf.save("users.pdf");
@@ -145,25 +205,28 @@ export const User = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#dc3545",
-      confirmButtonText: "Yes, delete user"
+      confirmButtonText: "Yes, delete user",
     });
 
     if (!result.isConfirmed) return;
 
     try {
       await del(`/auth/users/${id}`);
+
       getUsers(currentPage, filters);
 
       await Swal.fire({
         title: "Deleted",
         text: "The user has been deleted.",
-        icon: "success"
+        icon: "success",
       });
     } catch (error) {
       await Swal.fire({
         title: "Delete failed",
-        text: error.response?.data?.message || "Unable to delete user.",
-        icon: "error"
+        text:
+          error.response?.data?.message ||
+          "Unable to delete user.",
+        icon: "error",
       });
     }
   };
@@ -177,55 +240,65 @@ export const User = () => {
             src={`${BaseUrl}/images/${row.profile}`}
             alt=""
             className="rounded-circle"
-            style={{ width: 42, height: 42, objectFit: "cover" }}
+            style={{
+              width: 42,
+              height: 42,
+              objectFit: "cover",
+            }}
           />
         ) : (
           <span
             className="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
-            style={{ width: 42, height: 42 }}
+            style={{
+              width: 42,
+              height: 42,
+            }}
           >
             {row.FullName?.charAt(0)?.toUpperCase()}
           </span>
         ),
-      width: "90px"
+      width: "90px",
     },
 
     {
       name: "Name",
       selector: (row) => row.FullName,
       sortable: true,
-      grow: 2
+      grow: 2,
     },
 
-    // ✅ Gender added
     {
       name: "Gender",
-      selector: (row) => row.gender,
+      selector: (row) => 
+        row.gender,
       sortable: true,
-      cell: (row) => row.gender || "N/A"
+      cell: (row) => row.gender || "N/A",
     },
 
     {
       name: "Email",
       selector: (row) => row.email,
       sortable: true,
-      grow: 2
+      grow: 2,
     },
 
     {
       name: "Role",
       selector: (row) => row.role,
       sortable: true,
-      cell: (row) => (
-        <span className="badge text-bg-secondary">user</span>
-      )
+      cell: () => (
+        <span className="badge text-bg-secondary">
+          user
+        </span>
+      ),
     },
 
     {
       name: "Joined",
       selector: (row) => row.createdAt,
       sortable: true,
-      format: (row) => new Date(row.createdAt).toLocaleDateString("en-IN")
+      format: (row) =>
+        new Date(row.createdAt).toLocaleDateString("en-IN"),
     },
 
     {
@@ -239,18 +312,23 @@ export const User = () => {
           <FaTrashAlt /> Delete
         </button>
       ),
-      width: "120px"
-    }
+      width: "120px",
+    },
   ];
 
   return (
     <div className="container mt-5 pb-4">
+
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
         <div>
-          <h2 className="text-white mb-1">All Users</h2>
+          <h2 className="text-white mb-1">
+            All Users
+          </h2>
+
           <p className="text-white-50 mb-0">
-            {totalUsers} {totalUsers === 1 ? "user" : "users"} found
+            {totalUsers}{" "}
+            {totalUsers === 1 ? "user" : "users"} found
           </p>
         </div>
 
@@ -261,7 +339,8 @@ export const User = () => {
             onClick={exportCsv}
             disabled={exporting || !totalUsers}
           >
-            <FaFileCsv className="me-1" /> CSV
+            <FaFileCsv className="me-1" />
+            CSV
           </button>
 
           <button
@@ -270,29 +349,32 @@ export const User = () => {
             onClick={exportPdf}
             disabled={exporting || !totalUsers}
           >
-            <FaFilePdf className="me-1" /> PDF
+            <FaFilePdf className="me-1" />
+            PDF
           </button>
         </div>
+
       </div>
 
       <div className="card shadow-sm border-0">
         <div className="card-body p-3 p-md-4">
 
-          <div className="row g-2 align-items-end mb-3">
+          {/* FILTERS */}
+          <div className="row g-2 align-items-end flex-nowrap mb-3">
 
-            <div className="col-lg-3">
+            {/* NAME */}
+            <div className="col">
               <label
                 htmlFor="name-filter"
                 className="form-label small fw-semibold text-secondary"
               >
                 Search by name
               </label>
-                
+
               <div className="input-group">
                 <span className="input-group-text bg-white border-end-0">
                   <FaSearch className="text-secondary" />
                 </span>
-            
 
                 <input
                   id="name-filter"
@@ -306,7 +388,8 @@ export const User = () => {
               </div>
             </div>
 
-            <div className="col-lg-3">
+            {/* EMAIL */}
+            <div className="col">
               <label
                 htmlFor="email-filter"
                 className="form-label small fw-semibold text-secondary"
@@ -314,8 +397,6 @@ export const User = () => {
                 Search by email
               </label>
 
-            
-
               <input
                 id="email-filter"
                 type="search"
@@ -326,29 +407,32 @@ export const User = () => {
                 onChange={handleFilterChange}
               />
             </div>
-                
-        
-            <div className="col-lg-3">
+
+            {/* GENDER */}
+            <div className="col">
               <label
-                htmlFor="email-filter"
+                htmlFor="gender-filter"
                 className="form-label small fw-semibold text-secondary"
               >
                 Search by Gender
               </label>
 
-              <input
-                id="email-filter"
-                type="search"
-                name="email"
-                className="form-control"
-                placeholder="Email address..."
-                value={filters.email}
+              <select
+                id="gender-filter"
+                name="gender"
+                className="form-select"
+                value={filters.gender}
                 onChange={handleFilterChange}
-              />
+              >
+                <option value="">All Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
-
-            <div className="col-lg-3">
+            {/* DATE */}
+            <div className="col">
               <label
                 htmlFor="user-date-filter"
                 className="form-label small fw-semibold text-secondary"
@@ -366,14 +450,21 @@ export const User = () => {
               />
             </div>
 
-            <div className="col-lg-3">
+            {/* CLEAR */}
+            <div className="col">
               <button
                 type="button"
                 className="btn btn-outline-secondary w-100"
                 onClick={clearFilters}
-                disabled={!filters.name && !filters.email && !filters.date}
+                disabled={
+                  !filters.name &&
+                  !filters.email &&
+                  !filters.gender &&
+                  !filters.date
+                }
               >
-                <FaTimes className="me-1" /> Clear filters
+                <FaTimes className="me-1" />
+                Clear filters
               </button>
             </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { jsPDF } from "jspdf";
@@ -24,6 +23,15 @@ const tableStyles = {
     highlightOnHoverStyle: { backgroundColor: "#eef5ff", cursor: "pointer" },
   },
 };
+
+// ADDED: Convert HTML description into normal text
+const getPlainText = (html) =>
+  new DOMParser()
+    .parseFromString(html || "", "text/html")
+    .body.textContent
+    .replace(/\s+/g, " ")
+    .trim();
+
 
 export const Allpost = () => {
   const navigate = useNavigate();
@@ -67,6 +75,7 @@ export const Allpost = () => {
 
     setFilters(nextFilters);
     setResetPaginationToggle((previousValue) => !previousValue);
+
     // A filter change always starts at page one. The backend filters before
     // calculating pagination, so results and page totals stay correct.
     getPosts(1, nextFilters);
@@ -74,41 +83,63 @@ export const Allpost = () => {
 
   const clearFilters = () => {
     const emptyFilters = { title: "", description: "", date: "" };
+
     setFilters(emptyFilters);
     setResetPaginationToggle((previousValue) => !previousValue);
+
     getPosts(1, emptyFilters);
   };
 
   const changeRowsPerPage = (nextRowsPerPage) => {
     setRowsPerPage(nextRowsPerPage);
     setResetPaginationToggle((previousValue) => !previousValue);
+
     getPosts(1, filters, nextRowsPerPage);
   };
 
   const getExportPosts = async () => {
-    const response = await get("/blog/", { page: 1, limit: Math.max(totalBlogs, 1), ...filters });
+    const response = await get("/blog/", {
+      page: 1,
+      limit: Math.max(totalBlogs, 1),
+      ...filters
+    });
+
     return response.data.blogs;
   };
 
   const exportCsv = async () => {
     try {
       setExporting(true);
+
       const exportPosts = await getExportPosts();
-      const escapeCsvValue = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+
+      const escapeCsvValue = (value) =>
+        `"${String(value ?? "").replaceAll('"', '""')}"`;
+
       const rows = exportPosts.map((post) => [
         post.title,
         post.desc,
         new Date(post.createdAt).toLocaleDateString("en-IN"),
       ]);
+
       const csv = [["Title", "Description", "Created At"], ...rows]
         .map((row) => row.map(escapeCsvValue).join(","))
         .join("\n");
-      const file = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+      const file = new Blob(
+        [csv],
+        { type: "text/csv;charset=utf-8;" }
+      );
+
       const link = document.createElement("a");
+
       link.href = URL.createObjectURL(file);
       link.download = "posts.csv";
+
       link.click();
+
       URL.revokeObjectURL(link.href);
+
     } catch (error) {
       console.log("CSV export error:", error);
     } finally {
@@ -119,22 +150,33 @@ export const Allpost = () => {
   const exportPdf = async () => {
     try {
       setExporting(true);
+
       const exportPosts = await getExportPosts();
+
       const document = new jsPDF();
+
       document.text("Posts", 14, 15);
+
       autoTable(document, {
         startY: 22,
-        head: [["Image","Title", "Description", "Created At"]],
+        head: [["Image", "Title", "Description", "Created At"]],
+
         body: exportPosts.map((post) => [
           post.image,
           post.title,
           post.desc,
           new Date(post.createdAt).toLocaleDateString("en-IN"),
         ]),
+
         styles: { fontSize: 9 },
-        headStyles: { fillColor: [33, 37, 41] },
+
+        headStyles: {
+          fillColor: [33, 37, 41]
+        },
       });
+
       document.save("posts.pdf");
+
     } catch (error) {
       console.log("PDF export error:", error);
     } finally {
@@ -152,6 +194,7 @@ export const Allpost = () => {
       confirmButtonColor: "#dc3545",
       confirmButtonText: "Yes, delete it",
     });
+
     if (!result.isConfirmed) return;
 
     try {
@@ -160,11 +203,25 @@ export const Allpost = () => {
       setPosts((prevPosts) =>
         prevPosts.filter((post) => post._id !== id)
       );
+
       setTotalBlogs((count) => Math.max(0, count - 1));
-      await Swal.fire({ title: "Deleted", text: "The post has been deleted.", icon: "success" });
+
+      await Swal.fire({
+        title: "Deleted",
+        text: "The post has been deleted.",
+        icon: "success"
+      });
+
     } catch (error) {
       console.log("Delete error:", error);
-      await Swal.fire({ title: "Delete failed", text: error.response?.data?.message || "Unable to delete the post.", icon: "error" });
+
+      await Swal.fire({
+        title: "Delete failed",
+        text:
+          error.response?.data?.message ||
+          "Unable to delete the post.",
+        icon: "error"
+      });
     }
   };
 
@@ -178,6 +235,7 @@ export const Allpost = () => {
       confirmButtonColor: "#0d6efd",
       confirmButtonText: "Continue to update",
     });
+
     if (result.isConfirmed) {
       navigate(`/dashboard/editpost/${id}`);
     }
@@ -187,6 +245,7 @@ export const Allpost = () => {
   const columns = [
     {
       name: "Image",
+
       cell: (row) => (
         <img
           src={`${BaseUrl}${row.image}`}
@@ -199,6 +258,7 @@ export const Allpost = () => {
           }}
         />
       ),
+
       width: "100px",
     },
 
@@ -209,23 +269,50 @@ export const Allpost = () => {
       grow: 2,
     },
 
+    // CHANGED: Description column
     {
       name: "Description",
+
       selector: (row) => row.desc,
+
       sortable: true,
+
       grow: 3,
+
+      cell: (row) => (
+        <div
+          title={getPlainText(row.desc)}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            width: "100%",
+            lineHeight: "1.5",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+          }}
+        >
+          {getPlainText(row.desc)}
+        </div>
+      ),
     },
 
     {
       name: "Created At",
+
       selector: (row) => row.createdAt,
+
       sortable: true,
+
       format: (row) =>
         new Date(row.createdAt).toLocaleDateString("en-IN"),
     },
 
     {
       name: "Actions",
+
       cell: (row) => (
         <div className="d-flex gap-2">
 
@@ -245,54 +332,152 @@ export const Allpost = () => {
 
         </div>
       ),
+
       width: "220px",
     },
   ];
 
   return (
     <div className="container mt-5 pb-4">
+
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
         <div>
-          <h2 className="text-white mb-1">All Posts</h2>
+
+          <h2 className="text-white mb-1">
+            All Posts
+          </h2>
+
           <p className="text-white-50 mb-0">
             {totalBlogs} {totalBlogs === 1 ? "post" : "posts"} found
           </p>
+
         </div>
 
         <div className="d-flex flex-wrap gap-2">
-          <Link to="/dashboard/addpost" className="btn btn-primary btn-sm"><FaPlus className="me-1" /> Add Post</Link>
-          <button type="button" className="btn btn-outline-light btn-sm" onClick={exportCsv} disabled={exporting || !totalBlogs}>
+
+          <Link
+            to="/dashboard/addpost"
+            className="btn btn-primary btn-sm"
+          >
+            <FaPlus className="me-1" /> Add Post
+          </Link>
+
+          <button
+            type="button"
+            className="btn btn-outline-light btn-sm"
+            onClick={exportCsv}
+            disabled={exporting || !totalBlogs}
+          >
             <FaFileCsv className="me-1" /> CSV
           </button>
-          <button type="button" className="btn btn-outline-light btn-sm" onClick={exportPdf} disabled={exporting || !totalBlogs}>
+
+          <button
+            type="button"
+            className="btn btn-outline-light btn-sm"
+            onClick={exportPdf}
+            disabled={exporting || !totalBlogs}
+          >
             <FaFilePdf className="me-1" /> PDF
           </button>
+
         </div>
+
       </div>
 
       <div className="card shadow-sm border-0">
+
         <div className="card-body p-3 p-md-4">
+
           <div className="row g-2 align-items-end mb-3">
+
             <div className="col-lg-3">
-              <label className="form-label small fw-semibold text-secondary" htmlFor="title-filter">Search by title</label>
+
+              <label
+                className="form-label small fw-semibold text-secondary"
+                htmlFor="title-filter"
+              >
+                Search by title
+              </label>
+
               <div className="input-group">
-                <span className="input-group-text bg-white border-end-0"><FaSearch className="text-secondary" /></span>
-                <input id="title-filter" type="search" name="title" className="form-control border-start-0" placeholder="Post title..." value={filters.title} onChange={handleFilterChange} />
+
+                <span className="input-group-text bg-white border-end-0">
+                  <FaSearch className="text-secondary" />
+                </span>
+
+                <input
+                  id="title-filter"
+                  type="search"
+                  name="title"
+                  className="form-control border-start-0"
+                  placeholder="Post title..."
+                  value={filters.title}
+                  onChange={handleFilterChange}
+                />
+
               </div>
+
             </div>
+
             <div className="col-lg-3">
-              <label className="form-label small fw-semibold text-secondary" htmlFor="description-filter">Search by description</label>
-              <input id="description-filter" type="search" name="description" className="form-control" placeholder="Post description..." value={filters.description} onChange={handleFilterChange} />
+
+              <label
+                className="form-label small fw-semibold text-secondary"
+                htmlFor="description-filter"
+              >
+                Search by description
+              </label>
+
+              <input
+                id="description-filter"
+                type="search"
+                name="description"
+                className="form-control"
+                placeholder="Post description..."
+                value={filters.description}
+                onChange={handleFilterChange}
+              />
+
             </div>
+
             <div className="col-lg-3">
-              <label className="form-label small fw-semibold text-secondary" htmlFor="date-filter">Search by date</label>
-              <input id="date-filter" type="date" name="date" className="form-control" value={filters.date} onChange={handleFilterChange} />
+
+              <label
+                className="form-label small fw-semibold text-secondary"
+                htmlFor="date-filter"
+              >
+                Search by date
+              </label>
+
+              <input
+                id="date-filter"
+                type="date"
+                name="date"
+                className="form-control"
+                value={filters.date}
+                onChange={handleFilterChange}
+              />
+
             </div>
+
             <div className="col-lg-3">
-              <button type="button" className="btn btn-outline-secondary w-100" onClick={clearFilters} disabled={!filters.title && !filters.description && !filters.date}>
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary w-100"
+                onClick={clearFilters}
+                disabled={
+                  !filters.title &&
+                  !filters.description &&
+                  !filters.date
+                }
+              >
                 <FaTimes className="me-1" /> Clear filters
               </button>
+
             </div>
+
           </div>
 
           <DataTable
@@ -306,22 +491,39 @@ export const Allpost = () => {
             paginationDefaultPage={currentPage}
             paginationPerPage={rowsPerPage}
             paginationRowsPerPageOptions={[5, 10, 20, 50]}
+
             onChangePage={(page) => {
               setCurrentPage(page);
               getPosts(page, filters);
             }}
+
             onChangeRowsPerPage={changeRowsPerPage}
+
             progressPending={loading}
-            progressComponent={<div className="py-5 text-secondary">Loading posts...</div>}
-            noDataComponent={<div className="py-5 text-secondary">No posts match the selected filters.</div>}
+
+            progressComponent={
+              <div className="py-5 text-secondary">
+                Loading posts...
+              </div>
+            }
+
+            noDataComponent={
+              <div className="py-5 text-secondary">
+                No posts match the selected filters.
+              </div>
+            }
+
             highlightOnHover
             striped
             responsive
             persistTableHead
             customStyles={tableStyles}
           />
+
         </div>
+
       </div>
+
     </div>
   );
 };

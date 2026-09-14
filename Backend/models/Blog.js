@@ -18,6 +18,12 @@ const PostSchema= new mongoose.Schema({
     image:{
         type:String,
     },
+    added_by:{
+        type:String,
+    },
+    updated_by:{
+        type:String,
+    },
     status:{
         type:String,
         enum:['active', 'inactive'],

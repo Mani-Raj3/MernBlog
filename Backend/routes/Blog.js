@@ -2,7 +2,7 @@ import express from 'express'
 import cors from "cors";
 import { Create, Update, deletePost, getAllBlogs, getSingleBlog } from '../controllers/Blog.js'
 //import { isAdmin } from '../middleware/isAdmin.js'
-import {   isLogin } from '../middleware/isLogin.js'
+import  {isLogin}  from '../middleware/isLogin.js'
 
 import { postUpload } from "../middleware/Multer.js";
 

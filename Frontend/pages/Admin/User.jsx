@@ -164,7 +164,7 @@ export const User = () => {
 
       const pdf = new jsPDF();
 
-      pdf.text("Users", 14, 15);
+      pdf.text("users", 14, 15);
 
       autoTable(pdf, {
         startY: 22,

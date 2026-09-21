@@ -5,6 +5,9 @@ import DBCon from './utils/db.js'
 import AuthRoutes from './routes/Auth.js'
 import cookieParser from 'cookie-parser'
 import BlogsRoutes from './routes/Blog.js'
+import CommentsRoutes from "./routes/Comments.js";
+
+
 
 dotenv.config()
 const PORT=process.env.PORT || 3000
@@ -29,7 +32,7 @@ app.get("/",(req,res)=>{
 app.use("/images", express.static("public/images"));
 app.use('/auth',AuthRoutes)
 app.use('/blog',BlogsRoutes)
-
+app.use("/blog", CommentsRoutes);
 app.listen(PORT,()=>{
     console.log(`app is running on Port ${PORT}`)
 })

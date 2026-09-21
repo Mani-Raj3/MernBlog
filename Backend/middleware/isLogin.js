@@ -7,7 +7,7 @@ const isLogin = async (req, res, next) => {
         const token = authHeader?.startsWith("Bearer ")
             ? authHeader.split(" ")[1]
             : req.cookies?.token;
-
+console.log(req.body);
         if (!token) {
             return res.status(401).json({
                 success: false,

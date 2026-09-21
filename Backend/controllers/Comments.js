@@ -208,45 +208,4 @@ import CommentModel from "../models/Comments.js";
 
   }
 };
-//  const getComments = async (req, res) => {
-//   try {
-//     const { postId } = req.params;
-
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = 5;//parseInt(req.query.limit) || 5;
-
-//     const skip = (page - 1) * limit;
-
-//     const comments = await CommentModel.find({
-//       postId,
-//       parentCommentId: null
-//     })
-//       .populate("userId", "FullName email")
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(limit);
-
-//     const totalComments = await CommentModel.countDocuments({
-//       postId,
-//       parentCommentId: null
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       comments,
-//       currentPage: page,
-//       totalPages: Math.ceil(totalComments / limit),
-//       totalComments
-//     });
-
-//   } catch (error) {
-//     console.log("Get comments error:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to get comments"
-//     });
-//   }
-// };
-
 export {createComment, getComments, replyComment};

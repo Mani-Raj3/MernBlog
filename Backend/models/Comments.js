@@ -19,19 +19,23 @@ const commentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-       // null = normal comment
-    // comment ID = reply to that comment
+
+    // null = normal comment
+    // ObjectId = reply to another comment
     parentCommentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Comment",
-      default: null
-    }
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const CommentModel = mongoose.model("Comment", commentSchema);
+const CommentModel = mongoose.model(
+  "Comment",
+  commentSchema
+);
 
 export default CommentModel;

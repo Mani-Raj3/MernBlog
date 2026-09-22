@@ -6,7 +6,7 @@ import AuthRoutes from './routes/Auth.js'
 import cookieParser from 'cookie-parser'
 import BlogsRoutes from './routes/Blog.js'
 import CommentsRoutes from "./routes/Comments.js";
-
+import DashboardRoutes from "./routes/Dashboard.js";
 
 
 dotenv.config()
@@ -35,6 +35,7 @@ app.use("/images", express.static("public/images"));
 app.use('/auth',AuthRoutes)
 app.use('/blog',BlogsRoutes)
 app.use("/blog", CommentsRoutes);
+app.use("/dashboard", DashboardRoutes);
 app.listen(PORT,()=>{
     console.log(`app is running on Port ${PORT}`)
 })

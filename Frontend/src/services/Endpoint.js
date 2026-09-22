@@ -1,4 +1,5 @@
 import axios from 'axios'
+// import { get } from "../../services/Endpoint";
 export const BaseUrl='http://localhost:8000'
 
 const instance=axios.create({

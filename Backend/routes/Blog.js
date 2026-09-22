@@ -6,6 +6,7 @@ import {
   deletePost,
   getAllBlogs,
   getSingleBlog,
+  getSingleBlogBySlug
 } from "../controllers/Blog.js";
 
 import { isLogin } from "../middleware/isLogin.js";
@@ -31,8 +32,8 @@ BlogsRoutes.get(
 // =====================================================
 
 BlogsRoutes.get(
-  "/:id",
-  getSingleBlog
+  "/:slug",
+  getSingleBlogBySlug
 );
 
 

@@ -545,6 +545,58 @@ const getSingleBlog = async (req, res) => {
   }
 };
 
+const getSingleBlogBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog slug is required.",
+      });
+    }
+
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Invalid Blog ID.",
+    //   });
+    // }
+
+    // Increase view count by 1 whenever the post is opened
+    const blog = await PostModel.findOneAndUpdate(
+      {slug:slug},
+      {
+        $inc: {
+          views: 1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      blog,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 // =====================================================
 // CREATE BLOG
@@ -788,4 +840,5 @@ export {
   getAllBlogs,
   getAllActiveBlogs,
   getSingleBlog,
+  getSingleBlogBySlug
 };

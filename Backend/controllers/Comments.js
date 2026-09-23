@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import CommentModel from "../models/Comments.js";
+import PostModel from "../models/Blog.js";
 
  const createComment = async (req, res) => {
 
@@ -10,7 +11,7 @@ import CommentModel from "../models/Comments.js";
     console.log("Body:", req.body);
     console.log("User:", req.user);
 
-    const { postId } = req.params;
+    const { slug } = req.params;
     const { comment } = req.body;
 
     if (!comment || !comment.trim()) {
@@ -20,10 +21,18 @@ import CommentModel from "../models/Comments.js";
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(postId)) {
+
+
+    
+   // post Id on behalf of slug 
+
+    const blogDetails = await PostModel.findOne(
+      {slug:slug}
+    );
+    if (!mongoose.Types.ObjectId.isValid(blogDetails._id)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid post ID",
+        message: "Invalid post details",
       });
     }
 
@@ -35,7 +44,7 @@ import CommentModel from "../models/Comments.js";
     }
 
     const newComment = await CommentModel.create({
-      postId: postId,
+      postId: blogDetails._id,
       userId: req.user._id,
       comment: comment.trim(),
     });
@@ -122,14 +131,16 @@ import CommentModel from "../models/Comments.js";
  const getComments = async (req, res) => {
   try {
 
-    const { postId } = req.params;
+    const { slug } = req.params;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
 
     const skip = (page - 1) * limit;
-
-
+    const blogDetails = await PostModel.findOne(
+      {slug:slug}
+    );
+    const postId = blogDetails._id
     const comments = await CommentModel.aggregate([
 
       // 1. Get only main comments
@@ -209,3 +220,5 @@ import CommentModel from "../models/Comments.js";
   }
 };
 export {createComment, getComments, replyComment};
+
+

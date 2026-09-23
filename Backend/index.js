@@ -34,8 +34,10 @@ app.get("/",(req,res)=>{
 app.use("/images", express.static("public/images"));
 app.use('/auth',AuthRoutes)
 app.use('/blog',BlogsRoutes)
-app.use("/blog", CommentsRoutes);
+app.use("/blog/comments", CommentsRoutes);
+app.use("/blog/comment", CommentsRoutes);
 app.use("/dashboard", DashboardRoutes);
+
 app.listen(PORT,()=>{
     console.log(`app is running on Port ${PORT}`)
 })

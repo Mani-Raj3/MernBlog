@@ -42,7 +42,7 @@ export const Recentpost = () => {
 
         <div className="row">
           {blogs.map((blog) => (
-            <div className="col-md-4 col-lg-4 mb-4" key={blog._id}>
+            <div className="col-md-4 col-lg-4 mb-4" key={blog.slug}>
               <div
                 className="card border-success h-100"
                 style={{
@@ -72,7 +72,7 @@ export const Recentpost = () => {
 
                   <button
                     className="btn btn-primary w-100 mt-3"
-                    onClick={() => navigate(`/post/${blog._id}`)}
+                    onClick={() => navigate(`/post/${blog.slug}`)}
                   >
                     Read Article
                   </button>
